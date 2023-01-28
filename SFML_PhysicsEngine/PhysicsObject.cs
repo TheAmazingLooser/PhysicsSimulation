@@ -12,12 +12,18 @@ namespace SFMLTest
     {
         private static int indexes = 0;
         private int ID = 0;
+
+
         private Vector2f velocity = new Vector2f();
 
         // For future stuff.
         private Vector2f friction = new Vector2f();
 
         public float Bounciness { get; set; } = 0.3f;
+
+        public float DragForce { get; set; } = 0.05f;
+
+        public float Mass { get; set; } = 1f;
 
         public float VelX
         {
@@ -97,6 +103,11 @@ namespace SFMLTest
         public override int GetHashCode()
         {
             return ID.GetHashCode();
+        }
+
+        public virtual Vector2f GetCenterOfMass()
+        {
+            return new Vector2f(Position.X + Width / 2, Position.Y + Height / 2);
         }
     }
 }

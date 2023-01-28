@@ -29,6 +29,11 @@ namespace SFMLTest
             this.Gravity = Gravity * 0.005f;
         }
 
+        public void ApplyForce(PhysicsObject obj1, PhysicsObject obj2)
+        {
+        }
+
+
         public void Update(List<PhysicsObject> Objects)
         {
             ConcurrentDictionary<PhysicsObject, Vector2f> FuturePosition = new ConcurrentDictionary<PhysicsObject, Vector2f>();
@@ -39,6 +44,11 @@ namespace SFMLTest
 
                 PhysicsObject MainObj = Objects[i];
 
+                //MainObj.Transform.Rotate(1f, MainObj.GetCenterOfMass());
+
+                //MainObj.Origin = new Vector2f(MainObj.Width / 2, MainObj.Height / 2);
+                //MainObj.Rotation += .5f;
+                
                 Vector2f FutureVel = new Vector2f(MainObj.VelX, MainObj.VelY);
 
                 FutureVel.Y += Gravity;
@@ -53,14 +63,12 @@ namespace SFMLTest
                     // Jetzt schon Bouncen :D!
                     Vector2f CollisionPosition = new Vector2f();
                     Vector2f PreCollisionPosition = new Vector2f();
-                    if (MainObj.IsInsideObjectInFuture(SecondObj, Gravity, 1, out CollisionPosition, out PreCollisionPosition) && 
+                    if (MainObj.IsInsideObjectInFuture(SecondObj, Gravity, 1, out CollisionPosition, out PreCollisionPosition) &&
                         !MainObj.IsInsideObject(SecondObj))
                     {
                         // TODO: Detect the origin of collision
                         // left, right, bottom OR Top-sided! It can either be one. In very RARE cases it can be a real Edge!
-                        
-                        Vector2f FixedPos = MainObj.Position;
-                        FuturePosition.AddOrUpdate(MainObj, CollisionPosition, (key, value) => CollisionPosition);
+
 
                         Vector2f CollisionArea = new Vector2f();
 
@@ -68,7 +76,8 @@ namespace SFMLTest
                         {
                             float overlappingArea = Math.Abs(MainObj.Position.Y + MainObj.Height - SecondObj.Position.Y);
                             CollisionArea.Y = overlappingArea;
-                        } else if (MainObj.VelY < 0)
+                        }
+                        else if (MainObj.VelY <= 0)
                         {
                             float overlappingArea = Math.Abs(MainObj.Position.Y - (SecondObj.Position.Y + SecondObj.Height));
                             CollisionArea.Y = overlappingArea;
@@ -80,7 +89,7 @@ namespace SFMLTest
                             float overlappingArea = Math.Abs(MainObj.Position.X + MainObj.Width - SecondObj.Position.X);
                             CollisionArea.X = overlappingArea;
                         }
-                        else if (MainObj.VelX < 0)
+                        else if (MainObj.VelX <= 0)
                         {
                             float overlappingArea = Math.Abs(MainObj.Position.X - (SecondObj.Position.X + SecondObj.Width));
                             CollisionArea.X = overlappingArea;
@@ -88,29 +97,70 @@ namespace SFMLTest
 
                         if (CollisionArea.X >= CollisionArea.Y)
                         {
-                            FutureVel.Y *= -MainObj.Bounciness;
+                            //FutureVel.Y *= -MainObj.Bounciness;
+                            //FutureVel.X -= FutureVel.X * MainObj.DragForce;
+
+                            Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
+                            Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
+
+                            Vector2f newVelMain = new Vector2f((float)Math.Sqrt(FourceMain.X) * SecondObj.VelX, (float)Math.Sqrt(FourceMain.Y) * SecondObj.VelY);
+                            Vector2f newVel2nd = new Vector2f((float)Math.Sqrt(Fource2nd.X) * SecondObj.VelX, (float)Math.Sqrt(Fource2nd.Y) * SecondObj.VelY);
+
+                            if (!MainObj.IsSolid)
+                            {
+                                FutureVel = newVelMain;
+                            }
+                            if (!SecondObj.IsSolid)
+                            {
+                                SecondObj.VelX = newVel2nd.X;
+                                SecondObj.VelY = newVel2nd.Y;
+                            }
+
                             MainObj.Color = Color.Yellow;
                         }
+                        else
+                        {
+                            PreCollisionPosition.Y += MainObj.VelY;
+                        }
+
                         if (CollisionArea.Y >= CollisionArea.X)
                         {
-                            FutureVel.X *= -MainObj.Bounciness;
+                            //FutureVel.X *= -MainObj.Bounciness;
+
+                            Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
+                            Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
+
+                            Vector2f newVelMain = new Vector2f((float)Math.Sqrt(FourceMain.X) * SecondObj.VelX, (float)Math.Sqrt(FourceMain.Y) * SecondObj.VelY);
+                            Vector2f newVel2nd = new Vector2f((float)Math.Sqrt(Fource2nd.X) * SecondObj.VelX, (float)Math.Sqrt(Fource2nd.Y) * SecondObj.VelY);
+
+                            if (!MainObj.IsSolid)
+                            {
+                                FutureVel = newVelMain;
+                            }
+                            if (!SecondObj.IsSolid)
+                            {
+                                SecondObj.VelX = newVel2nd.X;
+                                SecondObj.VelY = newVel2nd.Y;
+                            }
+
                             MainObj.Color = Color.Red;
+                        } else
+                        {
+                            PreCollisionPosition.X += MainObj.VelX;
                         }
+
+                        FuturePosition.AddOrUpdate(MainObj, PreCollisionPosition, (key, value) => PreCollisionPosition);
+                    } else if (MainObj.IsInsideObject(SecondObj))
+                    {
+                        MainObj.Color = Color.Green;
                     }
                 }
 
                 MainObj.VelX = FutureVel.X;
                 MainObj.VelY = FutureVel.Y;
 
-                //if (!FuturePosition.ContainsKey(MainObj))
-                    FuturePosition.TryAdd(MainObj, MainObj.Position + FutureVel);
+                FuturePosition.TryAdd(MainObj, MainObj.Position + FutureVel);
             });
-            // TODO:
-            /*
-            for (int i = 0; i < Objects.Count; i++)
-            {
-            }
-            */
 
             foreach(var kv in FuturePosition)
             {

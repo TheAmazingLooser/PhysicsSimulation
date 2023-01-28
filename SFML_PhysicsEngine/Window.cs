@@ -21,7 +21,7 @@ namespace SFMLTest
             window.SetVerticalSyncEnabled(true);
         }
 
-        public void Update(World world, double FPS)
+        public void Render(World world, double FPS)
         {
             window.Clear();
 
@@ -31,11 +31,12 @@ namespace SFMLTest
                 window.Draw(pr2d.sp);
             }
             */
+
             world.Render(window);
-            window.Draw(new Text("FPS: " + FPS, font, 12));
-            window.Draw(new Text("Objects: " + world.ObjectAmount, font, 12)
+            window.Draw(new Text("FPS: " + FPS, font, 22));
+            window.Draw(new Text("Objects: " + world.ObjectAmount, font, 22)
             {
-                Position = new SFML.System.Vector2f(0, 14),
+                Position = new SFML.System.Vector2f(0, 25),
             });
 
             window.Display();

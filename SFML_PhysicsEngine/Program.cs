@@ -42,7 +42,7 @@ namespace SFMLTest
             };
 
             // ahh lol, höhere auflösungen
-            //window.window.Position = new SFML.System.Vector2i(-2200, 1200); // wenn das nicht geht koords ändern xD (lol, sorry) sieht so aus xD probier mal
+            window.window.Position = new Vector2i(-2200, 1200); // wenn das nicht geht koords ändern xD (lol, sorry) sieht so aus xD probier mal
 
             // Rects
 
@@ -65,16 +65,17 @@ namespace SFMLTest
             {
                 Texture = new Texture("texture.jpg"),
                 Position = new Vector2f(250,250),
-                VelY = 5,
-                VelX = -40,
+                VelY = 0,
+                VelX = 4,
                 Bounciness = 0.5f
             });
             world.AddObject(new Rectangle(64, 64)
             {
                 Texture = new Texture("texture.jpg"),
-                Position = new Vector2f(250,100),
+                Position = new Vector2f(800,250),
                 VelY = 0,
-                VelX = 4,
+                VelX = -4,
+                Mass = 30,
                 Bounciness = 0.5f
             });
             
@@ -167,7 +168,7 @@ namespace SFMLTest
                 long time = clock.Restart().AsMicroseconds();
 
                 // Rendern!
-                window.Update(world, 1000000 / time);
+                window.Render(world, 1000000 / time);
             }
         }
 

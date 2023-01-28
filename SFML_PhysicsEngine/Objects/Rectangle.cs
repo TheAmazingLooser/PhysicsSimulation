@@ -32,6 +32,38 @@ namespace SFMLTest.Objects
             return false;
         }
 
+        // Test Rotation
+        public bool IsInsideObjectRotation(PhysicsObject Obj)
+        {
+            // rpx = (radius * cos(angle)) + Middle
+            // rPx = ( * Mathf.Cos(Rotation)) + GetCenterOfMass()
+
+            // angle = Rotation
+            // Middle = centerOfMass()
+            // Center.X = Position.X + WIDTH / 2
+            // Center = Postion.Y + HEIGHT / 2
+            // radius = Math.Abs(
+
+
+
+            if (Obj is Rectangle rect)
+            {
+                if (Position.X + Width > Obj.Position.X &&
+                Position.X < Obj.Position.X + Obj.Width &&
+                Position.Y + Height > Obj.Position.Y &&
+                Position.Y < Obj.Position.Y + Obj.Height)
+                    return true;
+                return false;
+            }
+            return false;
+        }
+
+        Vector2f GetRotatedPosition(float angle, Vector2f center, float radius)
+        {
+            return new Vector2f((float)(radius * Math.Cos(angle) + center.X), (float)(radius * Math.Sin(angle) + center.X));
+        }
+        // End Test Rotation
+
         public override bool IsInsideObjectInFuture(PhysicsObject Obj, float gravity, int Ticks, out Vector2f CollisionPosition, out Vector2f PreCollisionPosition)
         {
             Vector2f future_pos_main = new Vector2f(Position.X, Position.Y);
@@ -52,7 +84,7 @@ namespace SFMLTest.Objects
 
                 if (!IsSolid)
                 {
-                    velMain.Y += gravity / (mult* mult);
+                    velMain.Y += gravity / mult;
                     future_pos_main.X += velMain.X / mult;
                     future_pos_main.Y += velMain.Y / mult;
                 }
