@@ -16,8 +16,10 @@ namespace SFMLTest
 
         private Vector2f velocity = new Vector2f();
 
+
         // For future stuff.
-        private Vector2f friction = new Vector2f();
+        //private Vector2f friction = new Vector2f();
+        // End Future Stuff
 
         public float Bounciness { get; set; } = 0.3f;
 

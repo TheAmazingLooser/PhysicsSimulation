@@ -31,12 +31,13 @@ namespace SFMLTest
 
         public void ApplyForce(PhysicsObject obj1, PhysicsObject obj2)
         {
-        }
 
+        }
 
         public void Update(List<PhysicsObject> Objects)
         {
             ConcurrentDictionary<PhysicsObject, Vector2f> FuturePosition = new ConcurrentDictionary<PhysicsObject, Vector2f>();
+            ConcurrentDictionary<PhysicsObject, Vector2f> FutureVelocities = new ConcurrentDictionary<PhysicsObject, Vector2f>();
 
             Parallel.For(0, Objects.Count, i =>
             {
@@ -63,7 +64,7 @@ namespace SFMLTest
                     // Jetzt schon Bouncen :D!
                     Vector2f CollisionPosition = new Vector2f();
                     Vector2f PreCollisionPosition = new Vector2f();
-                    if (MainObj.IsInsideObjectInFuture(SecondObj, Gravity, 1, out CollisionPosition, out PreCollisionPosition) &&
+                    if (MainObj.IsInsideObjectInFuture(SecondObj, Gravity, 1, out CollisionPosition, out PreCollisionPosition) && 
                         !MainObj.IsInsideObject(SecondObj))
                     {
                         // TODO: Detect the origin of collision
@@ -71,6 +72,15 @@ namespace SFMLTest
 
 
                         Vector2f CollisionArea = new Vector2f();
+                        // m1 * v1i + m2 * v2i = m1 * v1f + m2 * v2f
+                        // m1 * v1i + m2 * v2i = m1 * ((m1 * v1i + m2 * v2i - m2 * v2f) / m1) + m2 * v2f
+                        // (m1 * v1i + m2 * v2i - m2 * v2f) / m1 = v1f
+
+                        // v2f=((m1*(v1i-1)+m2*v2i)/(m2)) and v1f=1 or v2f=2 and m2=0 and v1f=v1i or v2f=4 and m1=0 and m2=0 and v1f=3
+
+                        // v1f=((m1*v1i-m2*(v2f-v2i))/(m1))
+                        FuturePosition.AddOrUpdate(MainObj, PreCollisionPosition, (key, value) => PreCollisionPosition);
+
 
                         if (MainObj.VelY > 0) // We're Falling
                         {
@@ -98,8 +108,13 @@ namespace SFMLTest
                         if (CollisionArea.X >= CollisionArea.Y)
                         {
                             //FutureVel.Y *= -MainObj.Bounciness;
-                            //FutureVel.X -= FutureVel.X * MainObj.DragForce;
+                            FutureVel.X -= FutureVel.X * MainObj.DragForce;
 
+                            float mainVelFuture = (MainObj.Mass * FutureVel.Y) / (MainObj.Mass + SecondObj.Mass);
+
+                            FutureVel.Y = mainVelFuture;
+
+                            /*
                             Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
                             Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
 
@@ -115,7 +130,7 @@ namespace SFMLTest
                                 SecondObj.VelX = newVel2nd.X;
                                 SecondObj.VelY = newVel2nd.Y;
                             }
-
+                            */
                             MainObj.Color = Color.Yellow;
                         }
                         else
@@ -127,6 +142,12 @@ namespace SFMLTest
                         {
                             //FutureVel.X *= -MainObj.Bounciness;
 
+                            float mainVelFuture = (MainObj.Mass * FutureVel.X) / (MainObj.Mass + SecondObj.Mass);
+                            float secondVelFuture = (SecondObj.Mass * SecondObj.VelX) / (MainObj.Mass + SecondObj.Mass);
+
+                            FutureVel.X = mainVelFuture - secondVelFuture;
+
+                                                        /*
                             Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
                             Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
 
@@ -142,6 +163,7 @@ namespace SFMLTest
                                 SecondObj.VelX = newVel2nd.X;
                                 SecondObj.VelY = newVel2nd.Y;
                             }
+                            */
 
                             MainObj.Color = Color.Red;
                         } else
@@ -149,23 +171,33 @@ namespace SFMLTest
                             PreCollisionPosition.X += MainObj.VelX;
                         }
 
-                        FuturePosition.AddOrUpdate(MainObj, PreCollisionPosition, (key, value) => PreCollisionPosition);
                     } else if (MainObj.IsInsideObject(SecondObj))
                     {
                         MainObj.Color = Color.Green;
                     }
                 }
 
-                MainObj.VelX = FutureVel.X;
-                MainObj.VelY = FutureVel.Y;
+                //MainObj.VelX = FutureVel.X;
+                //MainObj.VelY = FutureVel.Y;
+
+                FutureVelocities.TryAdd(MainObj, FutureVel);
 
                 FuturePosition.TryAdd(MainObj, MainObj.Position + FutureVel);
             });
 
-            foreach(var kv in FuturePosition)
+            foreach (var kv in FuturePosition)
             {
                 if (kv.Key != null)
                     kv.Key.Position = kv.Value;
+            }
+
+            foreach (var kv in FutureVelocities)
+            {
+                if (kv.Key != null)
+                {
+                    kv.Key.VelX = kv.Value.X;
+                    kv.Key.VelY = kv.Value.Y;
+                }
             }
         }
     }

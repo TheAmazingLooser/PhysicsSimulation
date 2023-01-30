@@ -67,12 +67,13 @@ namespace SFMLTest.Objects
         public override bool IsInsideObjectInFuture(PhysicsObject Obj, float gravity, int Ticks, out Vector2f CollisionPosition, out Vector2f PreCollisionPosition)
         {
             Vector2f future_pos_main = new Vector2f(Position.X, Position.Y);
+            Vector2f future_pos_second = new Vector2f(Obj.Position.X, Obj.Position.Y);
             CollisionPosition = future_pos_main;
             PreCollisionPosition = future_pos_main;
 
             Vector2f velMain = new Vector2f(VelX, VelY);
+            Vector2f velSecond = new Vector2f(Obj.VelX, Obj.VelY);
 
-            var Maxvel = Math.Max(0.01, Math.Max(VelX, VelY));
             float mult = 100;
 
             velMain.Y += gravity;
@@ -81,7 +82,6 @@ namespace SFMLTest.Objects
             {
                 var dist = GetDistance(Obj);
 
-
                 if (!IsSolid)
                 {
                     velMain.Y += gravity / mult;
@@ -89,10 +89,17 @@ namespace SFMLTest.Objects
                     future_pos_main.Y += velMain.Y / mult;
                 }
 
-                if (future_pos_main.X + Width > Obj.Position.X &&
-                future_pos_main.X < Obj.Position.X + Obj.Width &&
-                future_pos_main.Y + Height > Obj.Position.Y &&
-                future_pos_main.Y < Obj.Position.Y + Obj.Height)
+                if(!Obj.IsSolid)
+                {
+                    velSecond.Y += gravity / mult;
+                    future_pos_second.X += velSecond.X / mult;
+                    future_pos_second.Y += velSecond.Y / mult;
+                }
+
+                if (future_pos_main.X + Width > future_pos_second.X &&
+                future_pos_main.X < future_pos_second.X + Obj.Width &&
+                future_pos_main.Y + Height > future_pos_second.Y &&
+                future_pos_main.Y < future_pos_second.Y + Obj.Height)
                 {
                     CollisionPosition = future_pos_main;
                     return true;
