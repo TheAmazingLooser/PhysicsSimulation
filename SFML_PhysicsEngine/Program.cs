@@ -5,6 +5,7 @@ using SFML.System;
 using SFML.Window;
 using SFMLTest.Objects;
 using SFMLTest.Shapes;
+using SFML_PhysicsEngine.Objects;
 
 namespace SFMLTest
 {
@@ -61,23 +62,26 @@ namespace SFMLTest
             */
 
             
-            world.AddObject(new Rectangle(64, 64)
+            world.AddObject(new Circle(128, 128)
             {
-                Texture = new Texture("texture.jpg"),
+                Texture = new Texture("circle.png"),
                 Position = new Vector2f(250,250),
                 VelY = 0,
-                VelX = 4,
-                Mass = 60
+                VelX = 0,
+                Bounciness = 4f,
+                Mass = 10,
+                Radius = 32
             });
 
 
-            world.AddObject(new Rectangle(64, 64)
+            world.AddObject(new Circle(128, 128)
             {
-                Texture = new Texture("texture.jpg"),
-                Position = new Vector2f(800,250),
+                Texture = new Texture("circle.png"),
+                Position = new Vector2f(250 + 64,250+128+64),
                 VelY = 0,
-                VelX = -4,
-                Mass = 60
+                VelX = 0,
+                Mass = 10,
+                Radius = 5
             });
             
 

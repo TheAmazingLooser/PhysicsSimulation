@@ -26,7 +26,7 @@ namespace SFMLTest
         public float Gravity { private set; get; }
         public Physics(float Gravity)
         {
-            this.Gravity = Gravity * 0.005f;
+            this.Gravity = Gravity * 0.05f;
         }
 
         public void ApplyForce(PhysicsObject obj1, PhysicsObject obj2)
@@ -105,14 +105,50 @@ namespace SFMLTest
                             CollisionArea.X = overlappingArea;
                         }
 
+                        if (CollisionArea.Y >= CollisionArea.X)
+                        {
+                            FutureVel.X *= -MainObj.Bounciness / (MainObj.Mass / SecondObj.Mass);
+                            //FutureVel.Y -= FutureVel.Y * MainObj.DragForce;
+
+                            float mainVelFuture = (MainObj.Mass * FutureVel.X) / (MainObj.Mass + SecondObj.Mass);
+                            //float secondVelFuture = (SecondObj.Mass * SecondObj.VelX) / (MainObj.Mass + SecondObj.Mass);
+
+                            //FutureVel.X = mainVelFuture + (FutureVel.X * -MainObj.Bounciness);
+
+                            /*
+                            Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
+                            Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
+
+                            Vector2f newVelMain = new Vector2f((float)Math.Sqrt(FourceMain.X) * SecondObj.VelX, (float)Math.Sqrt(FourceMain.Y) * SecondObj.VelY);
+                            Vector2f newVel2nd = new Vector2f((float)Math.Sqrt(Fource2nd.X) * SecondObj.VelX, (float)Math.Sqrt(Fource2nd.Y) * SecondObj.VelY);
+
+                            if (!MainObj.IsSolid)
+                            {
+                                FutureVel = newVelMain;
+                            }
+                            if (!SecondObj.IsSolid)
+                            {
+                                SecondObj.VelX = newVel2nd.X;
+                                SecondObj.VelY = newVel2nd.Y;
+                            }
+                            */
+
+                            MainObj.Color = Color.Red;
+                        }
+                        else
+                        {
+                            PreCollisionPosition.X += MainObj.VelX;
+                        }
+
                         if (CollisionArea.X >= CollisionArea.Y)
                         {
                             //FutureVel.Y *= -MainObj.Bounciness;
+                            FutureVel.Y *= -MainObj.Bounciness / (MainObj.Mass / SecondObj.Mass);
                             FutureVel.X -= FutureVel.X * MainObj.DragForce;
 
                             float mainVelFuture = (MainObj.Mass * FutureVel.Y) / (MainObj.Mass + SecondObj.Mass);
-
-                            FutureVel.Y = mainVelFuture;
+                            //float secondVelFuture = (SecondObj.Mass * SecondObj.VelY) / (MainObj.Mass + SecondObj.Mass);
+                            //FutureVel.Y = mainVelFuture + (FutureVel.Y * -MainObj.Bounciness);
 
                             /*
                             Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
@@ -138,39 +174,7 @@ namespace SFMLTest
                             PreCollisionPosition.Y += MainObj.VelY;
                         }
 
-                        if (CollisionArea.Y >= CollisionArea.X)
-                        {
-                            //FutureVel.X *= -MainObj.Bounciness;
-
-                            float mainVelFuture = (MainObj.Mass * FutureVel.X) / (MainObj.Mass + SecondObj.Mass);
-                            float secondVelFuture = (SecondObj.Mass * SecondObj.VelX) / (MainObj.Mass + SecondObj.Mass);
-
-                            FutureVel.X = mainVelFuture - secondVelFuture;
-
-                                                        /*
-                            Vector2f FourceMain = new Vector2f(MainObj.Mass * (MainObj.VelX * MainObj.VelX), MainObj.Mass * (MainObj.VelY * MainObj.VelY));
-                            Vector2f Fource2nd = new Vector2f(SecondObj.Mass * (SecondObj.VelX * SecondObj.VelX), SecondObj.Mass * (SecondObj.VelY * SecondObj.VelY));
-
-                            Vector2f newVelMain = new Vector2f((float)Math.Sqrt(FourceMain.X) * SecondObj.VelX, (float)Math.Sqrt(FourceMain.Y) * SecondObj.VelY);
-                            Vector2f newVel2nd = new Vector2f((float)Math.Sqrt(Fource2nd.X) * SecondObj.VelX, (float)Math.Sqrt(Fource2nd.Y) * SecondObj.VelY);
-
-                            if (!MainObj.IsSolid)
-                            {
-                                FutureVel = newVelMain;
-                            }
-                            if (!SecondObj.IsSolid)
-                            {
-                                SecondObj.VelX = newVel2nd.X;
-                                SecondObj.VelY = newVel2nd.Y;
-                            }
-                            */
-
-                            MainObj.Color = Color.Red;
-                        } else
-                        {
-                            PreCollisionPosition.X += MainObj.VelX;
-                        }
-
+                        FuturePosition.AddOrUpdate(MainObj, PreCollisionPosition, (key, value) => PreCollisionPosition);
                     } else if (MainObj.IsInsideObject(SecondObj))
                     {
                         MainObj.Color = Color.Green;
